@@ -1,26 +1,78 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
 import { CreatePublicacioneDto } from './dto/create-publicacione.dto';
 import { UpdatePublicacioneDto } from './dto/update-publicacione.dto';
+import { Repository } from 'typeorm';
+import { Publicacione } from './entities/publicacione.entity';
+import { CategoriaService } from '../categoria/categoria.service';
+import { isUUID } from 'class-validator';
 
 @Injectable()
 export class PublicacionesService {
-  create(createPublicacioneDto: CreatePublicacioneDto) {
-    return 'This action adds a new publicacione';
+  constructor(
+    @InjectRepository(Publicacione)
+    private readonly publicacionesRepository: Repository<Publicacione>,
+    private readonly categoriaService: CategoriaService,
+  ) {}
+  async create(createPublicacioneDto: CreatePublicacioneDto) {
+    const categoria = await this.categoriaService.findOne(
+      createPublicacioneDto.IdCategory,
+    );
+
+    const publicaciones = this.publicacionesRepository.create({
+      ...createPublicacioneDto,
+      categoria,
+    });
+
+    await this.publicacionesRepository.save(publicaciones);
+    return publicaciones;
   }
 
-  findAll() {
-    return `This action returns all publicaciones`;
+  async findAll() {
+    const publicaciones = await this.publicacionesRepository.find();
+    return publicaciones;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} publicacione`;
+  async findOne(IdPost: string) {
+    if (!isUUID(IdPost)) {
+      throw new NotFoundException(`El id ${IdPost} no es un uui valido`);
+    }
+
+    const publicaciones = await this.publicacionesRepository.findOneBy({
+      IdPost: IdPost,
+    });
+
+    if (!publicaciones) {
+      throw new NotFoundException(
+        `publicaciones con el id ${publicaciones} no existe`,
+      );
+    }
+    return publicaciones;
   }
 
-  update(id: number, updatePublicacioneDto: UpdatePublicacioneDto) {
-    return `This action updates a #${id} publicacione`;
+  async update(IdPost: string, updatePublicacioneDto: UpdatePublicacioneDto) {
+    if (!isUUID(IdPost)) {
+      throw new NotFoundException(`El id ${IdPost} no es un uui valido`);
+    }
+
+    const publicaciones = await this.publicacionesRepository.preload({
+      IdPost,
+      ...updatePublicacioneDto,
+    });
+
+    if (!publicaciones) {
+      throw new NotFoundException(
+        `publicaciones con el id ${publicaciones} no existe`,
+      );
+    }
+
+    await this.publicacionesRepository.save(publicaciones);
+    return publicaciones;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} publicacione`;
+  async remove(IdPost: string) {
+    const publicaciones = await this.findOne(IdPost);
+    await this.publicacionesRepository.remove(publicaciones);
+    return 'la publicacion se elimino correctamente';
   }
 }

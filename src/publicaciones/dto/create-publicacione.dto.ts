@@ -1,4 +1,10 @@
-import { IsString, MinLength, IsOptional, MaxLength } from 'class-validator';
+import {
+  IsString,
+  MinLength,
+  IsOptional,
+  MaxLength,
+  IsUUID,
+} from 'class-validator';
 
 export class CreatePublicacioneDto {
   @IsString()
@@ -18,4 +24,6 @@ export class CreatePublicacioneDto {
   @MinLength(1)
   @MaxLength(20)
   Plugar: string;
+
+  IdCategory: string;
 }
