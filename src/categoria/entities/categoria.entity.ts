@@ -1,7 +1,9 @@
+import { Publicacione } from '../../publicaciones/entities/publicacione.entity';
 import {
   Column,
   CreateDateColumn,
   Entity,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 
@@ -29,4 +31,10 @@ export class Categoria {
     default: () => 'CURRENT_TIMESTAMP',
   })
   C_creado: Date;
+
+  @OneToMany(() => Publicacione, (Publicacione) => Publicacione.categoria, {
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE',
+  })
+  publicaciones: Publicacione;
 }
