@@ -8,5 +8,5 @@ export class CreateCategoriaDto {
   @IsString()
   @MinLength(1)
   @IsOptional()
-  Cphoto;
+  Cphoto: string;
 }
